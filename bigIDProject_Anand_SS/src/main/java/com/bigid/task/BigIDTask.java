@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class BigIDTask {
@@ -27,6 +29,8 @@ public class BigIDTask {
 		
 		String fileNameURL = "http://norvig.com/big.txt";
 		URL url = new URL(fileNameURL);
+		
+		ExecutorService executor = Executors.newCachedThreadPool();
 				
 		int linesPerBlock = 1000;
 		int linesRead = 0;
@@ -47,13 +51,12 @@ public class BigIDTask {
 					lineList.add(aggrLine);
 					final int lineOffset = aggrLinesRead;
 					final String inputLine = aggrLine;
-					Thread thread = new Thread(new Runnable() {
+					executor.execute(new Runnable() {
 						@Override
 						public void run() {
 							matcher(searchMapList, lineOffset, inputLine);
 						}
 					});
-					thread.start();
 
 					aggrLinesRead += linesRead;
 					linesRead = 0;
@@ -66,7 +69,7 @@ public class BigIDTask {
 		} catch (IOException e) {
 			System.err.println("Error reading the file: " + e.getMessage());
 		}
-
+		executor.shutdown();
 	}
 
 	public BigIDTask() {
